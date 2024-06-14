@@ -1,10 +1,41 @@
+# main.py
+
+import sqlite3
 from models.book import Book
 from models.author import Author
-from models.category import Category
+from models.genre import Genre
 import os
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def initialize_db():
+    with sqlite3.connect('library.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS books (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            author_id INTEGER,
+            genre_id INTEGER,
+            FOREIGN KEY (author_id) REFERENCES authors(id),
+            FOREIGN KEY (genre_id) REFERENCES genres(id)
+        )
+        """)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS authors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL
+        )
+        """)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS genres (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL
+        )
+        """)
+        print("Database 'library.db' initialized successfully.")
 
 def main_menu():
     clear_screen()
@@ -12,27 +43,25 @@ def main_menu():
     print("===================")
     print("1. Add Book")
     print("2. View Books")
-    print("3. Update Book")
-    print("4. Delete Book")
-    print("5. Add Author")
-    print("6. View Authors")
-    print("7. Update Author")
-    print("8. Delete Author")
-    print("9. Add Category")
-    print("10. View Categories")
-    print("11. Update Category")
-    print("12. Delete Category")
-    print("13. Exit")
+    print("3. Delete Book")
+    print("4. Add Author")
+    print("5. View Authors")
+    print("6. Delete Author")
+    print("7. Add Genre")
+    print("8. View Genres")
+    print("9. Delete Genre")
+    print("10. Exit")
 
     choice = input("Enter your choice: ")
     return choice
 
 def add_book():
     title = input("Enter the book title: ")
+    description = input("Enter the book description: ")
     author_id = input("Enter the author ID: ")
-    category_id = input("Enter the category ID: ")
+    genre_id = input("Enter the genre ID: ")
     try:
-        Book.create(title, int(author_id), int(category_id))
+        Book.create(title, description, int(author_id), int(genre_id))
         print("Book added successfully.")
     except Exception as e:
         print(f"Error adding book: {e}")
@@ -42,22 +71,11 @@ def view_books():
         books = Book.get_all()
         if books:
             for book in books:
-                print(f"ID: {book[0]}, Title: {book[1]}, Author: {book[2]}, Category ID: {book[3]}")
+                print(f"ID: {book[0]}, Title: {book[1]}, Description: {book[2]}, Author ID: {book[3]}, Genre ID: {book[4]}")
         else:
             print("No books found.")
     except Exception as e:
         print(f"Error fetching books: {e}")
-
-def update_book():
-    book_id = input("Enter the book ID to update: ")
-    title = input("Enter the new title: ")
-    author_id = input("Enter the new author ID: ")
-    category_id = input("Enter the new category ID: ")
-    try:
-        Book.update(int(book_id), title, int(author_id), int(category_id))
-        print("Book updated successfully.")
-    except Exception as e:
-        print(f"Error updating book: {e}")
 
 def delete_book():
     book_id = input("Enter the book ID to delete: ")
@@ -86,15 +104,6 @@ def view_authors():
     except Exception as e:
         print(f"Error fetching authors: {e}")
 
-def update_author():
-    author_id = input("Enter the author ID to update: ")
-    name = input("Enter the new name: ")
-    try:
-        Author.update(int(author_id), name)
-        print("Author updated successfully.")
-    except Exception as e:
-        print(f"Error updating author: {e}")
-
 def delete_author():
     author_id = input("Enter the author ID to delete: ")
     try:
@@ -103,43 +112,36 @@ def delete_author():
     except Exception as e:
         print(f"Error deleting author: {e}")
 
-def add_category():
-    name = input("Enter the category name: ")
+def add_genre():
+    name = input("Enter the genre name: ")
     try:
-        Category.create(name)
-        print("Category added successfully.")
+        Genre.create(name)
+        print("Genre added successfully.")
     except Exception as e:
-        print(f"Error adding category: {e}")
+        print(f"Error adding genre: {e}")
 
-def view_categories():
+def view_genres():
     try:
-        categories = Category.get_all()
-        if categories:
-            for category in categories:
-                print(f"ID: {category[0]}, Name: {category[1]}")
+        genres = Genre.get_all()
+        if genres:
+            for genre in genres:
+                print(f"ID: {genre[0]}, Name: {genre[1]}")
         else:
-            print("No categories found.")
+            print("No genres found.")
     except Exception as e:
-        print(f"Error fetching categories: {e}")
+        print(f"Error fetching genres: {e}")
 
-def update_category():
-    category_id = input("Enter the category ID to update: ")
-    name = input("Enter the new name: ")
+def delete_genre():
+    genre_id = input("Enter the genre ID to delete: ")
     try:
-        Category.update(int(category_id), name)
-        print("Category updated successfully.")
+        Genre.delete(int(genre_id))
+        print("Genre deleted successfully.")
     except Exception as e:
-        print(f"Error updating category: {e}")
-
-def delete_category():
-    category_id = input("Enter the category ID to delete: ")
-    try:
-        Category.delete(int(category_id))
-        print("Category deleted successfully.")
-    except Exception as e:
-        print(f"Error deleting category: {e}")
+        print(f"Error deleting genre: {e}")
 
 def main():
+    initialize_db()  # Initialize or update database schema
+
     while True:
         choice = main_menu()
         if choice == '1':
@@ -147,26 +149,20 @@ def main():
         elif choice == '2':
             view_books()
         elif choice == '3':
-            update_book()
-        elif choice == '4':
             delete_book()
-        elif choice == '5':
+        elif choice == '4':
             add_author()
-        elif choice == '6':
+        elif choice == '5':
             view_authors()
-        elif choice == '7':
-            update_author()
-        elif choice == '8':
+        elif choice == '6':
             delete_author()
+        elif choice == '7':
+            add_genre()
+        elif choice == '8':
+            view_genres()
         elif choice == '9':
-            add_category()
+            delete_genre()
         elif choice == '10':
-            view_categories()
-        elif choice == '11':
-            update_category()
-        elif choice == '12':
-            delete_category()
-        elif choice == '13':
             print("Exiting the application.")
             break
         else:

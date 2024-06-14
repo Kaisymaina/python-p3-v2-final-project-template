@@ -7,10 +7,11 @@ def initialize_db():
         CREATE TABLE IF NOT EXISTS books (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
+            description TEXT,
             author_id INTEGER,
-            category_id INTEGER,
+            genre_id INTEGER,
             FOREIGN KEY (author_id) REFERENCES authors(id),
-            FOREIGN KEY (category_id) REFERENCES categories(id)
+            FOREIGN KEY (genre_id) REFERENCES genres(id)
         )
         """)
         cursor.execute("""
@@ -20,7 +21,7 @@ def initialize_db():
         )
         """)
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS categories (
+        CREATE TABLE IF NOT EXISTS genres (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL
         )

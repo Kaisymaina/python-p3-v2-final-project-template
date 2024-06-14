@@ -1,7 +1,7 @@
 import click
 from models.book import Book
 from models.author import Author
-from models.category import Category
+from models.genre import Category
 
 @click.group()
 def cli():

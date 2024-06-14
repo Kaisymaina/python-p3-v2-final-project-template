@@ -4,9 +4,10 @@ class Book:
     orm = ORM('library.db')
 
     @classmethod
-    def create(cls, title, author_id, category_id):
+    def create(cls, title, description, author_id, genre_id):
         try:
-            cls.orm.execute('INSERT INTO books (title, author_id, category_id) VALUES (?, ?, ?)', (title, author_id, category_id))
+            cls.orm.execute('INSERT INTO books (title, description, author_id, genre_id) VALUES (?, ?, ?, ?)', 
+                            (title, description, author_id, genre_id))
             print("Book created successfully.")
         except Exception as e:
             print(f"Error creating book: {e}")
@@ -15,23 +16,15 @@ class Book:
     def get_all(cls):
         try:
             books = cls.orm.fetchall(
-                'SELECT books.id, books.title, authors.name, books.category_id '
+                'SELECT books.id, books.title, books.description, authors.name, genres.name '
                 'FROM books '
-                'JOIN authors ON books.author_id = authors.id'
+                'JOIN authors ON books.author_id = authors.id '
+                'JOIN genres ON books.genre_id = genres.id'
             )
             return books
         except Exception as e:
             print(f"Error fetching books: {e}")
             return []
-
-    @classmethod
-    def update(cls, book_id, title, author_id, category_id):
-        try:
-            cls.orm.execute('UPDATE books SET title = ?, author_id = ?, category_id = ? WHERE id = ?', 
-                            (title, author_id, category_id, book_id))
-            print("Book updated successfully.")
-        except Exception as e:
-            print(f"Error updating book: {e}")
 
     @classmethod
     def delete(cls, book_id):
